@@ -81,7 +81,7 @@ exports.updateState = (gamestate) => {
 			} break;
 
 		case fsm.roundResolved:
-			if (gs.ties > 2) {	
+			if (gs.ties >= gs.tieLimit) {	
 				console.log('Smiting player')
 				gs.FSM = fsm.smitingPlayer
 			} else if (gs.players[0].hp == 0 || gs.players[1].hp == 0) {
@@ -96,7 +96,6 @@ exports.updateState = (gamestate) => {
 		case fsm.smitingPlayer:
 			// get players randomly
 			let [ player1, player2 ] = getRandomPlayers()
-			gs.smited = player1 + 1
 			gs.players[player1].hp = 0
 			gs.results[gs.round - 1].winner = (player2 + 1)
 			console.log(`The impatient gods smited player: ${player1 + 1}`)
@@ -106,6 +105,7 @@ exports.updateState = (gamestate) => {
 
 		case fsm.endingMatch:
 			gs.victor = gs.results[gs.round - 1].winner
+			gs.defeated = gs.results[gs.round - 1].loser
 			console.log(`Victor is player ${gs.victor}`)
 			console.log('Resetting gamestate')
 			gs.FSM = fsm.resettingGamestate
@@ -117,6 +117,7 @@ exports.updateState = (gamestate) => {
 				console.log('Waiting for players')
 				resetGamestate(gs)
 				gs.FSM = fsm.waitingForPlayers
+				++gs.gameId // increment gameId (for client to track game id)
 			}, 3000)
 	}
 }
@@ -133,20 +134,20 @@ let setCharTimeout = (gs) => {
 }
 
 let getRandomChar = () => {
-	return getRandomInt(1, 3)
+	return getRandomIntInRange(1, 3)
 }
 
 let getRandomAction = () => {
-	return getRandomInt(1, 3)
+	return getRandomIntInRange(1, 3)
 }
 
 let getRandomPlayers = () => {
-	a = getRandomInt(0, 1)
+	a = getRandomIntInRange(0, 1)
 	b = (a == 1 ? 0 : 1)
 	return [a, b]
 }
 
-let getRandomInt = (min, max) => {
+let getRandomIntInRange = (min, max) => {
     min = Math.ceil(min)
     max = Math.floor(max)
     return Math.floor(Math.random() * (max - min + 1)) + min
@@ -169,6 +170,8 @@ let resetGamestate = (gs) => {
 	gs.results = []
 	gs.round = 0
 	gs.victor = 0
+	gs.defeated = 0
+	gs.tieLimit = getRandomIntInRange(2, 6)
 	gs.players = [
 		{
 			opaque_user_id: 0,
@@ -191,7 +194,7 @@ let resetGamestate = (gs) => {
 
 let updateTimeToIdle = (gs) => {
 	gs.timeToIdle = new Date()
-	gs.timeToIdle.setMinutes(gs.timeToIdle.getMinutes() + 1)
+	gs.timeToIdle.setMinutes(gs.timeToIdle.getMinutes() + 10)
 }
 
 let resolveFight = (gs) => {

@@ -5,6 +5,7 @@ const twitch = require('../../custom_modules/twitch.js');
 exports.verifyAndDecode = async (req, res, next) => {
 	// verify and decode Twitch JWT
 	// - kill any requests not from twitch
+
 	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
 		twitch.verifyAndDecode(req.headers.authorization, (err, decoded) => {
 			if (err) {
@@ -18,6 +19,7 @@ exports.verifyAndDecode = async (req, res, next) => {
 		})
 	} else {
 
+		// TODO(Jack): Remove this for production
 		req.JWT = {
 			opaque_user_id: req.headers.authorization,
 			channel_id: 1234

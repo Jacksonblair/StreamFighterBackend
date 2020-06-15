@@ -6,8 +6,6 @@ const GSF = require("./gamestateFunctions")
 
 /* Array holding all current 'games' */
 let gamestateArray = []
-/* Array of server JWTs */
-let serverJWTs = []
 /* Transaction Id management (catches transaction notifications that might be sent twice) */
 let transactionIds = []
 
@@ -47,7 +45,7 @@ exports.playRequestHandler = async (JWT) => {
 
 		// Update timeToIdle with new date()
 		gamestate.timeToIdle = new Date()
-		gamestate.timeToIdle.setMinutes(gamestate.timeToIdle.getMinutes() + 1)
+		gamestate.timeToIdle.setMinutes(gamestate.timeToIdle.getMinutes() + 10)
 
 		// Store ref to gamestate in array
 		gamestateArray.push(gamestate)
@@ -75,6 +73,9 @@ exports.charSelectHandler = async (characterSelection, JWT) => {
 	if (!gamestate) {
 		return console.log('[gamestate.charSelectHandler] game doesn\'t exist for channel')
 	} else {
+
+		// TODO(Jack): Make sure the char is in range of roster
+
 		// Pass id and character selection to gamestate object
 		GSU.setPlayerCharacter(JWT.opaque_user_id, characterSelection, gamestate)
 	}
@@ -95,22 +96,16 @@ exports.actionSelectHandler = async (actionSelection, JWT) => {
 	}
 }
 
-// Interval for updating state
-setInterval(() => {
-	gamestateArray.forEach((gamestate) => {
-		GSU.updateState(gamestate)
-	})
-}, 100)
-
 // Interval for sending packets via pub sub
 // - Also checking if we should remove stale gamestates
 setInterval(() => {
-
 	gamestateArray = gamestateArray.filter((gamestate) => {
 		if (gamestate.timeToIdle < new Date()) {
 			console.log('Gamestate has been idle for too long, removing')
 			return false
 		} else {
+			// Update gamestate before sending
+			GSU.updateState(gamestate)
 
 			// Pull packet variables out of gamestate
 			let packet = GSF.getGamestatePacket(gamestate)
@@ -157,7 +152,7 @@ const getUserDetailsFromTwitch = async (newUser, callback) => {
 		} catch(err) {
 			// If theres an error getting information (probably because its coming from dev rig) ...
 			// ... set dummy display name, and dont persist
-			console.log(error.response.data)
+			console.log(err.response.data)
 			console.log('[gamestateEventHandler.getUserDetails] Error getting user details. Setting dummy name.')
 			newUser.display_name = 'DUMMY'
 		}

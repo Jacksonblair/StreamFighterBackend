@@ -27,6 +27,8 @@ class gamestate {
 	round = 0
 	victor = 0
 	smited = 0
+	tieLimit = 2
+	gameId = 0
 
 	players = [
 		{

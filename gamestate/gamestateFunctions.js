@@ -21,13 +21,16 @@ exports.userIsInGamestate = (gamestate, opaque_user_id) => {
 
 exports.getGamestatePacket = (gamestate) => {
 	let packet = {
-		queue: gamestate.queue,
-		scores: gamestate.scores,
-		results: gamestate.results,
+		queue: [...gamestate.queue],
+		scores: [...gamestate.scores],
+		results: [...gamestate.results],
 		round: gamestate.round,
 		victor: gamestate.victor,
-		smited: gamestate.smited,
-		players: gamestate.players
+		defeated: gamestate.defeated,
+		players: {...gamestate.players},
+		FSM: gamestate.FSM,
+		tieLimit: gamestate.tieLimit,
+		gameId: gamestate.gameId
 	}
 	return packet
 }

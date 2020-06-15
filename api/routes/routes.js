@@ -8,9 +8,8 @@ router.post('/play', mw.verifyAndDecode, controllers.play)
 router.post('/select/:char', mw.verifyAndDecode, controllers.select)
 router.post('/action/:action', mw.verifyAndDecode, controllers.action)
 
-router.get('/', (req, res) => {
-	console.log('get request')
-})
+/* Route to get character roster */
+router.get('/roster', controllers.roster)
 
 /* Transaction Routes */
 router.get('/transaction', controllers.getTransaction)

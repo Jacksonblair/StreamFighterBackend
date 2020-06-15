@@ -1,3 +1,4 @@
+const request = require('request');
 const gamestateEventHandler = require('../../gamestate/gamestateEventHandler');
 
 /* Controllers for routes */
@@ -17,6 +18,17 @@ exports.action = (req, res) => {
 	res.sendStatus(200)
 }
 
+exports.roster = (req, res) => {
+	// get roster
+	request('https://pastebin.com/raw/9rmbSV4r', function (err, response, body) {
+		console.log(body)
+		if (!err && response.statusCode == 200) {
+			res.json(body)
+		} else {
+			res.json(0)
+		}
+	})
+}
 
 // TODO(Jack): Reexamine these functions below
 
